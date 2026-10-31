@@ -7,7 +7,7 @@ module.exports = async (req, res) => {
   if (!apiKey) {
     return res.status(200).json({
       success: false,
-      error: 'GROQ_API_KEY is missing in Vercel settings.'
+      error: 'GROQ_API_KEY environment variable is missing on Vercel.'
     });
   }
 
@@ -23,11 +23,20 @@ module.exports = async (req, res) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a live JSON market endpoint. Output ONLY a valid JSON array of fuel station pricing objects for Zamboanga City (unleaded/premium/diesel prices strictly between 85.00 and 112.00 PHP). Do not use markdown syntax. Format: [{"id":"s1","name":"Petron Baliwasan","brand":"Petron","address":"Baliwasan, Zamboanga City","prices":{"unleaded":98.50,"premium":104.20,"diesel":88.50},"amenities":["Air & Water"],"updatedAt":"2026-10-31"}]'
+            content: `You are a real-time DTI SRP commodity market backend for Zamboanga City, Philippines. Return ONLY a valid JSON array of basic commodities with official DTI Suggested Retail Prices (SRP) in PHP and Centavos integer representations. Do NOT include markdown blocks (\`\`\`json). Output MUST strictly follow this structure:
+[
+  {"id":"c1","name":"Café Puro 3-in-1 (17g)","brand":"Café Puro","category":"Beverages","pricePHP":4.70,"priceCentavos":470},
+  {"id":"c2","name":"Kopiko Black (30g)","brand":"Kopiko","category":"Beverages","pricePHP":8.50,"priceCentavos":850},
+  {"id":"c3","name":"Saba Phil. Sardines (155g)","brand":"Saba","category":"Canned Goods","pricePHP":17.50,"priceCentavos":1750},
+  {"id":"c4","name":"Argentina Corned Beef (150g)","brand":"Argentina","category":"Canned Goods","pricePHP":36.75,"priceCentavos":3675},
+  {"id":"c5","name":"Pinoy Tasty Bread (450g)","brand":"Pinoy","category":"Bakery","pricePHP":44.00,"priceCentavos":4400},
+  {"id":"c6","name":"Bear Brand Powdered Milk (135g)","brand":"Bear Brand","category":"Dairy","pricePHP":50.00,"priceCentavos":5000},
+  {"id":"c7","name":"Jersey Powdered Milk (300g)","brand":"Jersey","category":"Dairy","pricePHP":96.25,"priceCentavos":9625}
+]`
           },
           {
             role: 'user',
-            content: 'Provide current realistic retail fuel prices for Petron Baliwasan, Shell Guiwan, Caltex Tetuan, and Phoenix Putik in Zamboanga City.'
+            content: 'Generate DTI commodity SRP list for Zamboanga City basic necessities with PHP and centavos integer values.'
           }
         ],
         temperature: 0.1
@@ -49,24 +58,24 @@ module.exports = async (req, res) => {
     if (!jsonMatch) {
       return res.status(200).json({
         success: false,
-        error: 'JSON parsing failed from AI output stream.',
+        error: 'JSON extraction failed from API response.',
         raw: rawContent
       });
     }
 
-    const stations = JSON.parse(jsonMatch[0]);
+    const items = JSON.parse(jsonMatch[0]);
 
     return res.status(200).json({
       success: true,
       timestamp: new Date().toISOString(),
       provider: 'Groq (openai/gpt-oss-20b)',
-      stations: stations
+      items: items
     });
 
   } catch (err) {
     return res.status(200).json({
       success: false,
-      error: `Execution failure: ${err.message}`
+      error: `Execution Failure: ${err.message}`
     });
   }
 };
