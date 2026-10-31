@@ -160,7 +160,8 @@ function runSimulation() {
         visContainer.appendChild(passDiv);
     });
 
-    document.getElementById('sortStatus')!.innerText = `Sorted via Radix (${sorted.length} stations)`;
+    const statusEl = document.getElementById('sortStatus');
+    if (statusEl) statusEl.innerText = `Sorted via Radix (${sorted.length} stations)`;
 }
 
 document.getElementById('sortBtn')?.addEventListener('click', runSimulation);
@@ -174,4 +175,10 @@ document.getElementById('locBtn')?.addEventListener('click', () => {
         }, () => alert("Location denied. Using default Mercedes location."));
     }
 });
-window.addEventListener('DOMContentLoaded', runSimulation);
+
+// Robust execution check
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', runSimulation);
+} else {
+    runSimulation();
+}
