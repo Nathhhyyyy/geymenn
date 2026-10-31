@@ -1,10 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // 1. Enable CORS for browser requests
+  // Set CORS and JSON Headers
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST');
   res.setHeader(
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -14,69 +14,73 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  const apiKey = process.env.GROQ_API_KEY;
+  // Access Groq key set in Vercel Environment Variables
+  const groqApiKey = process.env.GROQ_API_KEY;
 
-  if (!apiKey) {
+  if (!groqApiKey) {
     return res.status(200).json({
       success: false,
-      error: 'GROQ_API_KEY environment variable missing in Vercel.'
+      error: 'GROQ_API_KEY missing in Vercel settings. Ensure it is added as GROQ_API_KEY.'
     });
   }
 
   try {
-    const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${groqApiKey}`
       },
       body: JSON.stringify({
         model: 'llama-3.3-70b-versatile',
         messages: [
           {
             role: 'system',
-            content: 'You are a JSON market data generator. Return ONLY a valid JSON array of fuel stations in Zamboanga City with retail prices in the range of 85 to 112 PHP. Format: [{"id":"s1","name":"Petron Baliwasan","brand":"Petron","address":"Baliwasan, Zamboanga City","prices":{"unleaded":98.50,"premium":104.20,"diesel":88.50},"amenities":["Air & Water"],"updatedAt":"2026-10-31"}]'
+            content: `You are a real-time fuel data provider for Zamboanga City, Philippines. Return ONLY a valid JSON array of station objects with retail pump prices per liter in the current range (₱85.00 to ₱112.00/L). Do NOT output markdown code block ticks (\`\`\`json) or conversational text. Format strictly: [{"id":"s1","name":"Petron Baliwasan","brand":"Petron","address":"Baliwasan, Zamboanga City","prices":{"unleaded":98.50,"premium":104.20,"diesel":88.50},"amenities":["Air & Water","Treats Store"],"updatedAt":"${new Date().toISOString().split('T')[0]}"}]`
           },
           {
             role: 'user',
-            content: 'Generate realistic fuel station prices for Petron Baliwasan, Shell Guiwan, Caltex Tetuan, and Phoenix Putik in Zamboanga City.'
+            content: 'Output current station pricing for Petron Baliwasan, Shell Guiwan, Caltex Tetuan, and Phoenix Putik in Zamboanga City.'
           }
         ],
         temperature: 0.1
       })
     });
 
-    if (!groqRes.ok) {
-      const errText = await groqRes.text();
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text();
       return res.status(200).json({
         success: false,
-        error: `Groq HTTP Error ${groqRes.status}: ${errText}`
+        error: `Groq HTTP Error ${groqResponse.status}: ${errorText}`
       });
     }
 
-    const data: any = await groqRes.json();
+    const data: any = await groqResponse.json();
     const rawContent = data?.choices?.[0]?.message?.content || '';
-    const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
 
+    // Safely extract standard JSON Array string from output
+    const jsonMatch = rawContent.match(/\[[\s\S]*\]/);
     if (!jsonMatch) {
       return res.status(200).json({
         success: false,
-        error: 'Invalid JSON payload returned from backend parser.'
+        error: 'Backend failed to parse JSON array from Groq output.',
+        raw: rawContent
       });
     }
 
-    const stations = JSON.parse(jsonMatch[0]);
+    const liveStations = JSON.parse(jsonMatch[0]);
 
     return res.status(200).json({
       success: true,
+      provider: 'Groq Cloud API (llama-3.3-70b-versatile)',
       timestamp: new Date().toISOString(),
-      stations: stations
+      stations: liveStations
     });
 
-  } catch (error: any) {
+  } catch (err: any) {
     return res.status(200).json({
       success: false,
-      error: error?.message || 'Server runtime error.'
+      error: `Serverless exception: ${err?.message || 'Unknown execution error'}`
     });
   }
 }
