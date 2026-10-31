@@ -3,42 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZamboGas Live | Real-Time Fuel Prices in Zamboanga City</title>
+    <title>ZamboMart Live - DTI SRP & Radix Sort Visualizer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header class="header">
-        <div class="container">
-            <h1>ZamboGas Live ⛽</h1>
-            <p class="tagline">Real-time fuel station pricing and amenities in Zamboanga City.</p>
-        </div>
+    <header class="hero">
+        <h1>ZamboMart Live 🛒</h1>
+        <p>Zamboanga City DTI Suggested Retail Price (SRP) Tracker & Radix Sort Engine</p>
     </header>
 
-    <main class="container main-layout">
-        <!-- Control Panel -->
-        <section class="card control-panel">
-            <h2>Station & Market Controls</h2>
-            
-            <button id="liveSyncBtn" class="btn primary" style="background: #0284c7; margin-bottom: 1rem;">🔄 Fetch Live DOE Prices</button>
-            <button id="sortBtn" class="btn secondary">Refresh Station List</button>
+    <main class="container">
+        <section class="controls-panel">
+            <h2>Market & Sort Controls</h2>
+            <button id="liveSyncBtn" class="btn primary">🔄 Fetch Live DTI Prices</button>
+            <button id="sortBtn" class="btn secondary">📊 Radix Sort by Price (Centavos)</button>
         </section>
 
-        <!-- Results Section -->
-        <section class="results-section">
-            <div class="card">
-                <div class="results-header">
-                    <h2>Zamboanga City Stations</h2>
-                    <span id="sortStatus" class="badge">Ready</span>
-                </div>
-                <div id="stationList" class="station-list">
-                    <!-- Station cards populated by JS -->
-                </div>
+        <section class="display-panel">
+            <div class="panel-header">
+                <h2>Zamboanga City Basic Commodities</h2>
+                <span id="sortStatus" class="status-badge">Connecting to backend...</span>
+            </div>
+            <div id="stationList" class="station-grid">
+                <!-- Dynamic commodity cards will render here -->
             </div>
         </section>
     </main>
 
-    <footer class="footer">
-        <p>© 2026 ZamboGas Live · Zamboanga City Fuel Tracker</p>
+    <footer>
+        <p>© 2026 ZamboMart Live · Zamboanga City DTI Commodity Tracker</p>
     </footer>
 
     <script src="app.js"></script>
