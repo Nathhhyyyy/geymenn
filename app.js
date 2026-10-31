@@ -6,10 +6,10 @@ function renderStations() {
     
     listContainer.innerHTML = '';
 
-    if (stations.length === 0) {
+    if (!stations || stations.length === 0) {
         listContainer.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: #64748b;">
-                <p>⌛ Waiting for live data fetch...</p>
+                <p>⌛ Fetching live station pricing from API backend...</p>
             </div>
         `;
         return;
@@ -27,41 +27,56 @@ function renderStations() {
                     <div>⛽ <strong>Premium:</strong> ₱${Number(station.prices.premium).toFixed(2)} / L</div>
                     <div>🚛 <strong>Diesel:</strong> ₱${Number(station.prices.diesel).toFixed(2)} / L</div>
                 </div>
-                <p class="station-meta" style="margin-top: 0.5rem;"><strong>Station Goods / Perks:</strong> ${station.amenities ? station.amenities.join(', ') : 'Standard Perks'}</p>
+                <p class="station-meta" style="margin-top: 0.5rem;">
+                    <strong>Amenities:</strong> ${station.amenities ? station.amenities.join(', ') : 'Standard Amenities'}
+                </p>
             </div>
             <div class="station-cost">
-                <span class="badge">Live API</span>
+                <span class="badge" style="background-color: #10b981; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">
+                    Live API
+                </span>
             </div>
         `;
         listContainer.appendChild(card);
     });
 
     const statusEl = document.getElementById('sortStatus');
-    if (statusEl) statusEl.innerText = `Synced ${stations.length} Stations`;
+    if (statusEl) statusEl.innerText = `Synced ${stations.length} Zamboanga Stations`;
 }
 
 async function fetchLivePrices() {
     const statusEl = document.getElementById('sortStatus');
-    if (statusEl) statusEl.innerText = "Querying live API endpoint...";
+    if (statusEl) statusEl.innerText = "Syncing with backend...";
 
     try {
-        const res = await fetch('/api/live-prices');
-        const data = await res.json();
+        const response = await fetch('/api/live-prices');
+        const data = await response.json();
 
-        if (data.success && Array.isArray(data.stations)) {
+        if (data.success && Array.isArray(data.stations) && data.stations.length > 0) {
             stations = data.stations;
             renderStations();
             if (statusEl) statusEl.innerText = "Live Sync Active";
         } else {
+            console.warn("API Warning:", data.error);
             if (statusEl) statusEl.innerText = "Sync Notice: " + (data.error || "No data");
         }
     } catch (err) {
-        if (statusEl) statusEl.innerText = "Sync Error";
-        console.error(err);
+        console.error("Fetch Error:", err);
+        if (statusEl) statusEl.innerText = "Network Error";
     }
 }
 
+// Button event listeners
 document.getElementById('liveSyncBtn')?.addEventListener('click', fetchLivePrices);
-document.getElementById('sortBtn')?.addEventListener('click', fetchLivePrices);
+document.getElementById('sortBtn')?.addEventListener('click', () => {
+    // Basic price sorting (lowest unleaded price first)
+    stations.sort((a, b) => a.prices.unleaded - b.prices.unleaded);
+    renderStations();
+});
 
-window.addEventListener('DOMContentLoaded', fetchLivePrices);
+// Run on page load
+if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', fetchLivePrices);
+} else {
+    fetchLivePrices();
+}
