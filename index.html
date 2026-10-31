@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZamboGas Live | Cheapest Fuel, Sorted by Radix</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1>ZamboGas Live ⛽</h1>
+            <p class="tagline">Find the cheapest pump in Zamboanga City in seconds. Sorted by Radix.</p>
+        </div>
+    </header>
+
+    <main class="container main-layout">
+        <!-- Control Panel -->
+        <section class="card control-panel">
+            <h2>Trip & Fuel Settings</h2>
+            
+            <div class="input-group">
+                <label for="fuelType">Fuel Type</label>
+                <select id="fuelType">
+                    <option value="unleaded">Unleaded</option>
+                    <option value="premium">Premium</option>
+                    <option value="diesel">Diesel</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="liters">Liters Needed</label>
+                <input type="number" id="liters" value="10" min="1" max="100">
+            </div>
+
+            <div class="input-group">
+                <label for="vehicleType">Vehicle Type</label>
+                <select id="vehicleType">
+                    <option value="motorcycle">Motorcycle (45 km/L)</option>
+                    <option value="tricycle">Tricycle (25 km/L)</option>
+                    <option value="car" selected>Car (12 km/L)</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="radius">Radius Filter</label>
+                <select id="radius">
+                    <option value="all">All Stations</option>
+                    <option value="1">Within 1 km</option>
+                    <option value="3">Within 3 km</option>
+                    <option value="5">Within 5 km</option>
+                </select>
+            </div>
+
+            <div class="input-group">
+                <label for="sortMode">Sort Mode</label>
+                <select id="sortMode">
+                    <option value="trueCost">True Cost (Price + Travel Fuel)</option>
+                    <option value="price">Price per Liter</option>
+                    <option value="distance">Nearest Distance</option>
+                </select>
+            </div>
+
+            <button id="locBtn" class="btn secondary">📍 Use My Location (Mercedes)</button>
+            <button id="sortBtn" class="btn primary">Compute & Radix Sort</button>
+        </section>
+
+        <!-- Results & Visualizer Section -->
+        <section class="results-section">
+            <div class="card">
+                <div class="results-header">
+                    <h2>Ranked Stations</h2>
+                    <span id="sortStatus" class="badge">Ready</span>
+                </div>
+                <div id="stationList" class="station-list">
+                    <!-- Station cards populated by TS -->
+                </div>
+            </div>
+
+            <!-- Radix Sort Visualizer Panel -->
+            <div class="card visualizer-card">
+                <details>
+                    <summary><strong>🔍 Radix Sort Visualizer (10 FIFO Queues: 0–9)</strong></summary>
+                    <p class="vis-hint">Watch how integers (centavos) are distributed across digit buckets pass-by-pass (LSD).</p>
+                    <div id="visualizerPasses" class="visualizer-passes">
+                        <p class="placeholder-text">Click "Compute & Radix Sort" to view bucket passes.</p>
+                    </div>
+                </details>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 ZamboGas Live · Built with Custom LSD Radix Sort & Queue Architecture</p>
+    </footer>
+
+    <script type="module" src="app.ts"></script>
+</body>
+</html>
